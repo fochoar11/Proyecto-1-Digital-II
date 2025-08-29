@@ -1,0 +1,18 @@
+#include <Arduino.h>
+
+#define led_v 26 
+#define led_a 27  
+#define led_r 14 
+
+void setup() {
+  pinMode(led_v, OUTPUT);
+  pinMode(led_a, OUTPUT);
+  pinMode(led_r, OUTPUT);
+
+  digitalWrite(led_v, HIGH);  
+  digitalWrite(led_a, HIGH);  
+  digitalWrite(led_r, HIGH); 
+}
+
+void loop() {
+}
