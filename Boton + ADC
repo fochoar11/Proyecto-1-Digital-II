@@ -1,0 +1,41 @@
+#include <Arduino.h>
+
+#define sensor_pin 34
+#define bot1       35
+
+int   sensor_val= 0;
+float temp= 0.0;
+float temp_disp= 0.0;
+int   bot_state= 0;
+int   last_bot_state= 0;
+unsigned long last_time= 0;
+unsigned long deb_delay= 50;
+
+void setup() {
+  pinMode(bot1, INPUT_PULLDOWN);   
+  Serial.begin(115200);
+}
+
+void loop() {
+  int reading = digitalRead(bot1);
+  if (reading != last_bot_state) last_time= millis();
+
+  if ((millis() - last_time) > deb_delay) {
+    if (reading != bot_state) {
+      bot_state = reading;
+
+      if (bot_state == HIGH) {
+        sensor_val = analogRead(sensor_pin);
+        float millivolts = sensor_val * (3300.0 / 4095.0);
+        temp = millivolts / 10.0;   
+        temp += 5.0; // le puse este pequeño offset debido a que mi sensor estaba teniendo un corrimiento de menor temperatura                
+        temp_disp = round(temp * 10) / 10.0;
+
+        Serial.print("Temperatura: ");
+        Serial.print(temp_disp);
+        
+      }
+    }
+  }
+  last_bot_state = reading;
+}
