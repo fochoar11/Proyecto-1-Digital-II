@@ -1,0 +1,59 @@
+#include <Arduino.h>
+#define sensor_pin 34
+#define bot1 35
+#define led_v 26
+#define led_a 27
+#define led_r 14
+
+int sensor_val=0;
+float temp=0.0;
+float temp_disp=0.0;
+int bot_state=0;
+int last_bot_state=0;
+unsigned long last_time=0;
+unsigned long deb_delay=50;
+
+int led_v_pwm=0;
+int led_a_pwm=0;
+int led_r_pwm=0;
+
+void setup(){
+  pinMode(bot1,INPUT_PULLDOWN);
+  pinMode(led_v,OUTPUT);
+  pinMode(led_a,OUTPUT);
+  pinMode(led_r,OUTPUT);
+  ledcSetup(0,5000,8); ledcAttachPin(led_v,0);
+  ledcSetup(1,5000,8); ledcAttachPin(led_a,1);
+  ledcSetup(2,5000,8); ledcAttachPin(led_r,2);
+  Serial.begin(115200);
+}
+
+void loop(){
+  int reading=digitalRead(bot1);
+  if(reading!=last_bot_state) last_time=millis();
+  if((millis()-last_time)>deb_delay){
+    if(reading!=bot_state){
+      bot_state=reading;
+      if(bot_state==HIGH){
+        sensor_val=analogRead(sensor_pin);
+        float millivolts=sensor_val*(3300.0/4095.0);
+        temp=millivolts/10.0;
+        temp+=5.0;
+        temp_disp=round(temp*10)/10.0;
+        Serial.print("Temperatura: ");
+        Serial.print(temp_disp);
+        if(temp_disp<22.0){
+          led_v_pwm=255; led_a_pwm=0; led_r_pwm=0;
+        } else if(temp_disp<25.0){
+          led_v_pwm=0; led_a_pwm=255; led_r_pwm=0;
+        } else {
+          led_v_pwm=0; led_a_pwm=0; led_r_pwm=255;
+        }
+        ledcWrite(0,led_v_pwm);
+        ledcWrite(1,led_a_pwm);
+        ledcWrite(2,led_r_pwm);
+      }
+    }
+  }
+  last_bot_state=reading;
+}
